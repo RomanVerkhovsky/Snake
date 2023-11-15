@@ -1,4 +1,5 @@
 import pygame
+import game_objects
 import settings
 
 
@@ -27,11 +28,17 @@ class Game:
         self.step = 30
         self.arrow_direction = 'right'
 
+        # creating entities in the game
+        self.player = game_objects.Snake()
+        self.meal = game_objects.Meal()
+
     def event(self):
         """event handling"""
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
             # change direction moving
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 # direction right
                 if event.key == self.input_device.right and self.arrow_direction != 'left':
                     self.direction = [self.step, 0]
@@ -53,11 +60,51 @@ class Game:
                     self.arrow_direction = 'up'
                     self.first_start = False
 
-    def update(self): pass
+    def update(self):
+        if self.player.get_place() == self.meal.get_place():    # check eating and next actions
+            self.meal.respawn(self.player.coordinate_snake)
+            self.player.grow()
+        if not self.first_start:
+            self.player.update(self.direction, self.step, self.arrow_direction)
 
-    def render(self): pass
+    def render(self):
+        # display background
+        self.window.blit(pygame.image.load('images/grass.jpg'), (0, 0))
+
+        # display game objects
+        self.window.blit(self.meal.object, (self.meal.x, self.meal.y))  # display meal
+
+        for i in range(len(self.player.coordinate_snake)):    # display snake
+            if 0 < i < len(self.player.coordinate_snake) - 1:
+                if self.player.coordinate_snake[i][2] == 'h':
+                    self.window.blit(self.player.body_horizont, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'v':
+                    self.window.blit(self.player.body_vertical, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'ur':
+                    self.window.blit(self.player.body_turn_ur, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'ul':
+                    self.window.blit(self.player.body_turn_ul, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'dr':
+                    self.window.blit(self.player.body_turn_dr, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'dl':
+                    self.window.blit(self.player.body_turn_dl, self.player.coordinate_snake[i][:2])
+            elif i == len(self.player.coordinate_snake) - 1:
+                self.window.blit(self.player.object, self.player.coordinate_snake[i][:2])
+            else:
+                if self.player.coordinate_snake[i][2] == 'tail_r':
+                    self.window.blit(self.player.body_tail_right, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'tail_l':
+                    self.window.blit(self.player.body_tail_left, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'tail_d':
+                    self.window.blit(self.player.body_tail_down, self.player.coordinate_snake[i][:2])
+                elif self.player.coordinate_snake[i][2] == 'tail_u':
+                    self.window.blit(self.player.body_tail_up, self.player.coordinate_snake[i][:2])
+
+        pygame.display.update()
 
     def run(self):
-        self.event()
-
-        self.clock.tick(self.fps)
+        while self.running:
+            self.event()
+            self.update()
+            self.render()
+            self.clock.tick(self.fps)
