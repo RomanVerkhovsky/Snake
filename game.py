@@ -59,15 +59,19 @@ class Game:
                     self.direction = [0, -self.step]
                     self.arrow_direction = 'up'
                     self.first_start = False
+                break
 
     def update(self):
+        """update state game"""
         if self.player.get_place() == self.meal.get_place():    # check eating and next actions
             self.meal.respawn(self.player.coordinate_snake)
             self.player.grow()
         if not self.first_start:
-            self.player.update(self.direction, self.step, self.arrow_direction)
+            if not self.player.check_game_over(self.direction):
+                self.player.update(self.direction, self.step, self.arrow_direction)
 
     def render(self):
+        """display state game"""
         # display background
         self.window.blit(pygame.image.load('images/grass.jpg'), (0, 0))
 

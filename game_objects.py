@@ -81,20 +81,35 @@ class Snake:
             else:
                 self.body_type = 'v'
 
-        self.x += direction[0]
-        self.y += direction[1]
-        self.coordinate_snake.append([self.x, self.y, 'head', arrow_direction])
-        self.coordinate_snake[-2][-2] = self.body_type
-        self.coordinate_snake[-2][-1] = self.arrow_direction
-        self.coordinate_snake.pop(0)
-        if self.coordinate_snake[0][-1] == 'right':
-            self.coordinate_snake[0][-2] = 'tail_r'
-        elif self.coordinate_snake[0][-1] == 'left':
-            self.coordinate_snake[0][-2] = 'tail_l'
-        elif self.coordinate_snake[0][-1] == 'down':
-            self.coordinate_snake[0][-2] = 'tail_d'
-        elif self.coordinate_snake[0][-1] == 'up':
-            self.coordinate_snake[0][-2] = 'tail_u'
+        if not self.check_game_over(direction):
+            self.x += direction[0]
+            self.y += direction[1]
+            self.coordinate_snake.append([self.x, self.y, 'head', arrow_direction])
+            self.coordinate_snake[-2][-2] = self.body_type
+            self.coordinate_snake[-2][-1] = self.arrow_direction
+            self.coordinate_snake.pop(0)
+            if self.coordinate_snake[0][-1] == 'right':
+                self.coordinate_snake[0][-2] = 'tail_r'
+            elif self.coordinate_snake[0][-1] == 'left':
+                self.coordinate_snake[0][-2] = 'tail_l'
+            elif self.coordinate_snake[0][-1] == 'down':
+                self.coordinate_snake[0][-2] = 'tail_d'
+            elif self.coordinate_snake[0][-1] == 'up':
+                self.coordinate_snake[0][-2] = 'tail_u'
+
+    def check_game_over(self, direction) -> bool:
+        coordinate = []  # list of coordinate for checking collision
+        for i in range(len(self.coordinate_snake)):
+            coordinate.append([])
+            for j in range(len(self.coordinate_snake[i]) - 2):
+                coordinate[i].append(self.coordinate_snake[i][j])
+
+        if (settings.resolution[0] - self.width >= self.x + direction[0] >= 0 and
+                settings.resolution[1] - self.height >= self.y + direction[1] >= 0 and
+                [self.x + direction[0], self.y + direction[1]] not in coordinate):
+            return False
+        else:
+            return True
 
     def grow(self):
         """grow of snake"""
@@ -119,10 +134,19 @@ class Meal:
         self.x = random.randrange(0, settings.resolution[0] - self.width, self.width)
         self.y = random.randrange(0, settings.resolution[1] - self.height, self.height)
 
-    def respawn(self, lst: list):
+    def respawn(self, coordinate_snake: list):
         """next position on map"""
+        coordinate = []  # list of snake coordinate
+        for i in range(len(coordinate_snake)):
+            coordinate.append([])
+            for j in range(len(coordinate_snake[i]) - 2):
+                coordinate[i].append(coordinate_snake[i][j])
+
         self.x = random.randrange(0, settings.resolution[0] - self.width, self.width)
         self.y = random.randrange(0, settings.resolution[1] - self.height, self.height)
+        while [self.x, self.y] in coordinate:
+            self.x = random.randrange(0, settings.resolution[0] - self.width, self.width)
+            self.y = random.randrange(0, settings.resolution[1] - self.height, self.height)
 
     def get_place(self):
         """get coordinates of position on map"""
