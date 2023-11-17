@@ -1,6 +1,56 @@
 import pygame
-import game_objects
+import objects
 import settings
+
+
+class Menu:
+    """class for creation and display menu"""
+    def __init__(self, window):
+        self.window = window    # window for rendering
+
+        # menu status
+        self.check_notQUIT = True
+        self.status = 'menu'
+
+        # fonts
+        self.font_name = pygame.font.SysFont('Comic Sans MS', 164, bold=True, italic=True)
+        self.font_menu = pygame.font.SysFont('Comic Sans MS', 40, bold=True, italic=True)
+
+        # inscriptions
+        self.title = self.font_name.render('SNAKE', True, pygame.Color(252, 200, 12))
+        self.text_1 = self.font_menu.render('START GAME', True, pygame.Color('orange'))
+        self.text_2 = self.font_menu.render('  SETTINGS', True, pygame.Color('orange'))
+
+    def event(self):
+        """event handling"""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.check_notQUIT = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.status = 'game'
+
+    def update(self):
+        """update state game"""
+        pass
+
+    def render(self):
+        """display state menu"""
+        # display background
+        self.window.blit(pygame.image.load('images/grass.jpg'), (0, 0))
+        self.window.blit(pygame.image.load('images/snake_menu.png'), (settings.resolution[0] / 2 - 300, 30))
+
+        # display inscriptions
+        self.window.blit(self.title, (settings.resolution[0] / 2 - 300, 30))
+        self.window.blit(self.text_1, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2))
+        self.window.blit(self.text_2, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50))
+
+        pygame.display.update()
+
+    def run(self):
+        self.event()
+        self.update()
+        self.render()
 
 
 class Game:
@@ -11,6 +61,7 @@ class Game:
         self.window = window    # window for rendering
 
         # game status
+        self.mode = 'game'
         self.check_notQUIT = True
         self.status = 'play'
         self.scores = 0
@@ -25,8 +76,19 @@ class Game:
         self.arrow_direction = 'right'
 
         # creating entities in the game
-        self.player = game_objects.Snake()
-        self.meal = game_objects.Meal()
+        self.player = objects.Snake()
+        self.meal = objects.Meal()
+
+        # fonts
+        self.font_score = pygame.font.SysFont('Comic Sans MS', 40)
+        self.font_over = pygame.font.SysFont('Comic Sans MS', 64)
+        self.font_other = pygame.font.SysFont('Comic Sans MS', 32)
+
+        # inscriptions
+        self.score = self.font_score.render(f'SCORE: {self.scores}', True, pygame.Color('orange'))
+        self.game_over = self.font_over.render('GAME OVER', True, pygame.Color(220, 20, 60))
+        self.text_1 = self.font_other.render('ESC      -   start menu', True, pygame.Color('orange'))
+        self.text_2 = self.font_other.render('SPACE  -   restart', True, pygame.Color('orange'))
 
     def event(self):
         """event handling"""
@@ -56,11 +118,18 @@ class Game:
                     self.arrow_direction = 'up'
                     self.first_start = False
                 break
+            elif event.type == pygame.KEYDOWN and self.status == 'game over':
+                if event.key == self.input_device.back:
+                    self.mode = 'menu'
+                if event.key == self.input_device.start:
+                    self.mode = 'reset'
 
     def update(self):
         """update state game"""
         if self.status == 'play':
             if self.player.get_place() == self.meal.get_place():    # check eating and next actions
+                self.scores += 1
+                self.score = self.font_score.render(f'SCORE: {self.scores}', True, pygame.Color('orange'))
                 self.meal.respawn(self.player.coordinate_snake)
                 self.player.grow()
             if not self.first_start:
@@ -103,4 +172,17 @@ class Game:
                 elif self.player.coordinate_snake[i][2] == 'tail_u':
                     self.window.blit(self.player.body_tail_up, self.player.coordinate_snake[i][:2])
 
+        # display inscriptions
+        self.window.blit(self.score, (settings.resolution[0] - 300, 0))    # display score
+
+        if self.status == 'game over':    # display game over menu
+            self.window.blit(self.game_over, (settings.resolution[0] / 2 - 200, settings.resolution[1] / 2 - 100))
+            self.window.blit(self.text_1, (settings.resolution[0] / 2 - 180, settings.resolution[1] / 2))
+            self.window.blit(self.text_2, (settings.resolution[0] / 2 - 180, settings.resolution[1] / 2 + 50))
+
         pygame.display.update()
+
+    def run(self):
+        self.event()
+        self.update()
+        self.render()

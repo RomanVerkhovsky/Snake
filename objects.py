@@ -151,5 +151,3 @@ class Meal:
     def get_place(self):
         """get coordinates of position on map"""
         return self.x, self.y
-
-

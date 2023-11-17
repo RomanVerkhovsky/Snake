@@ -1,6 +1,6 @@
 import pygame
 import settings
-from game import Game
+from modes import Game, Menu
 
 
 class App:
@@ -15,28 +15,37 @@ class App:
         self.clock = pygame.time.Clock()  # control frame rate
         self.fps = 10    # speed
 
-        # game status
+        # app status
         self.running = True
+        self.mode = 'menu'  # current mode of app
+        self.menu = Menu(self.window)   # creating menu session
         self.game = None
 
     def run(self) -> None:
         """main game loop"""
         while self.running:
+            # enter in menu
+            if self.mode == 'menu':
+                self.game = None    # reset game session
+                self.menu.status = 'menu'
+                self.menu.run()
+                self.running = self.menu.check_notQUIT
+                self.mode = self.menu.status  # change game status
+
             # enter in game
-            if self.game is None:
-                self.game = Game(self.window)    # creation game session
+            if self.mode == 'game':
+                if self.game is None:
+                    self.game = Game(self.window)    # creation game session
+                self.game.run()
+                self.running = self.game.check_notQUIT  # check QUIT
+                self.mode = self.game.mode  # change game status
 
-            # events
-            self.game.event()
-            self.running = self.game.check_notQUIT    # check QUIT
+            # reset game state
+            if self.mode == 'reset':
+                self.game = None    # reset game session
+                self.mode = 'game'
 
-            # update game state
-            self.game.update()
-
-            # rendering
-            self.game.render()
-
-            self.running = self.game.check_notQUIT  # check QUIT
+            # frame rate
             self.clock.tick(self.fps)
 
 

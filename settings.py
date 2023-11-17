@@ -30,5 +30,5 @@ class InputDevice:
             self.back = pygame.K_ESCAPE
 
 
-resolution = 900, 900  # size of window
-control = InputDevice()
+resolution = 900, 900    # size of window
+control = InputDevice()    # creating a management module
