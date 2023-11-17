@@ -5,18 +5,14 @@ import settings
 
 class Game:
     """class for creation game session"""
-    def __init__(self) -> None:
-        pygame.init()  # initialization of pygame
+    def __init__(self, window) -> None:
 
         # window setup
-        self.resolution = settings.resolution
-        self.window = pygame.display.set_mode(self.resolution)  # creating window
-        pygame.display.set_caption("Snake")  # set title
-        self.clock = pygame.time.Clock()  # control frame rate
-        self.fps = 10
+        self.window = window    # window for rendering
 
         # game status
-        self.running = True
+        self.check_notQUIT = True
+        self.status = 'play'
         self.scores = 0
 
         # control settings
@@ -36,9 +32,9 @@ class Game:
         """event handling"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.check_notQUIT = False
             # change direction moving
-            elif event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN and self.status == 'play':
                 # direction right
                 if event.key == self.input_device.right and self.arrow_direction != 'left':
                     self.direction = [self.step, 0]
@@ -63,12 +59,15 @@ class Game:
 
     def update(self):
         """update state game"""
-        if self.player.get_place() == self.meal.get_place():    # check eating and next actions
-            self.meal.respawn(self.player.coordinate_snake)
-            self.player.grow()
-        if not self.first_start:
-            if not self.player.check_game_over(self.direction):
-                self.player.update(self.direction, self.step, self.arrow_direction)
+        if self.status == 'play':
+            if self.player.get_place() == self.meal.get_place():    # check eating and next actions
+                self.meal.respawn(self.player.coordinate_snake)
+                self.player.grow()
+            if not self.first_start:
+                if not self.player.check_game_over(self.direction):
+                    self.player.update(self.direction, self.step, self.arrow_direction)
+                else:
+                    self.status = 'game over'
 
     def render(self):
         """display state game"""
@@ -105,10 +104,3 @@ class Game:
                     self.window.blit(self.player.body_tail_up, self.player.coordinate_snake[i][:2])
 
         pygame.display.update()
-
-    def run(self):
-        while self.running:
-            self.event()
-            self.update()
-            self.render()
-            self.clock.tick(self.fps)
