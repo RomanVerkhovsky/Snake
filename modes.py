@@ -31,7 +31,7 @@ class Menu:
                     self.status = 'game'
 
     def update(self):
-        """update state game"""
+        """update state menu"""
         pass
 
     def render(self):
@@ -81,11 +81,13 @@ class Game:
 
         # fonts
         self.font_score = pygame.font.SysFont('Comic Sans MS', 40)
+        self.font_pause = pygame.font.SysFont('Comic Sans MS', 64)
         self.font_over = pygame.font.SysFont('Comic Sans MS', 64)
         self.font_other = pygame.font.SysFont('Comic Sans MS', 32)
 
         # inscriptions
         self.score = self.font_score.render(f'SCORE: {self.scores}', True, pygame.Color('orange'))
+        self.pause = self.font_pause.render('PAUSE', True, pygame.Color('orange'))
         self.game_over = self.font_over.render('GAME OVER', True, pygame.Color(220, 20, 60))
         self.text_1 = self.font_other.render('ESC      -   start menu', True, pygame.Color('orange'))
         self.text_2 = self.font_other.render('SPACE  -   restart', True, pygame.Color('orange'))
@@ -117,7 +119,15 @@ class Game:
                     self.direction = [0, -self.step]
                     self.arrow_direction = 'up'
                     self.first_start = False
+                # pause
+                elif event.key == pygame.K_ESCAPE:
+                    self.status = 'pause'
                 break
+            # events in pause
+            elif event.type == pygame.KEYDOWN and self.status == 'pause':
+                if event.key == pygame.K_ESCAPE:
+                    self.status = 'play'
+            # events in game over
             elif event.type == pygame.KEYDOWN and self.status == 'game over':
                 if event.key == self.input_device.back:
                     self.mode = 'menu'
@@ -174,6 +184,9 @@ class Game:
 
         # display inscriptions
         self.window.blit(self.score, (settings.resolution[0] - 300, 0))    # display score
+
+        if self.status == 'pause':    # display pause
+            self.window.blit(self.pause, (settings.resolution[0]/2 - 100, settings.resolution[1]/2 - 100))
 
         if self.status == 'game over':    # display game over menu
             self.window.blit(self.game_over, (settings.resolution[0] / 2 - 200, settings.resolution[1] / 2 - 100))
