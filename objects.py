@@ -151,3 +151,65 @@ class Meal:
     def get_place(self):
         """get coordinates of position on map"""
         return self.x, self.y
+
+
+class LevelMenu:
+    def __init__(self):
+        # fonts
+        self.font_name = pygame.font.SysFont('Comic Sans MS', 164, bold=True, italic=True)
+        self.font_menu = pygame.font.SysFont('Comic Sans MS', 40, bold=True, italic=True)
+
+        # inscriptions menu level 1
+        self.text1_l1 = self.font_menu.render('START GAME', True, pygame.Color('orange'))
+        self.text2_l1 = self.font_menu.render('  SETTINGS', True, pygame.Color('orange'))
+
+        # inscriptions menu level 2
+        self.text1_l2 = self.font_menu.render('Input settings', True, pygame.Color('orange'))
+        self.text2_l2 = self.font_menu.render('Info', True, pygame.Color('orange'))
+
+        # levels
+        self.level_menu_1 = [(self.text1_l1, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2), 0),
+                             (self.text2_l1, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50), 1)]
+
+        self.level_menu_2 = [(self.text1_l2, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2), 1),
+                             (self.text2_l2, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50), 1)]
+
+        # current level
+        self.current_level = self.level_menu_1
+
+        self.dict_levels_menu = {1: self.level_menu_1,
+                                 2: self.level_menu_2}
+
+    def choice_menu(self, number_menu):
+        self.current_level = self.dict_levels_menu[number_menu]
+
+    def check_next_level(self, info: tuple) -> bool:
+        if info[2] == 1:
+            return True
+        return False
+
+    def update_menu(self, array: list):
+        if array[0] == self.text2_l1:
+            self.current_level = self.level_menu_2
+
+
+class ContainerInscription:
+    def __init__(self, array: dict = None):
+        self.inscriptions = array
+
+
+class Inscription:
+    def __init__(self, text: str, color: str) -> None:
+        self.font = pygame.font.SysFont('Comic Sans MS', 40, bold=True, italic=True)
+        self.inscription = self.font.render(text, True, pygame.Color(color))
+
+        # linked inscription for next level menu
+        self.link_inscriptions = []
+
+    def check_link(self) -> bool:
+        if len(self.link_inscriptions) == 0:
+            return False
+        return True
+
+    def add_link(self, inscription: object):
+        self.link_inscriptions.append(inscription)

@@ -12,14 +12,51 @@ class Menu:
         self.check_notQUIT = True
         self.status = 'menu'
 
-        # fonts
+        # static inscription
         self.font_name = pygame.font.SysFont('Comic Sans MS', 164, bold=True, italic=True)
-        self.font_menu = pygame.font.SysFont('Comic Sans MS', 40, bold=True, italic=True)
+        self.font_other = pygame.font.SysFont('Comic Sans MS', 40, bold=True, italic=True)
 
-        # inscriptions
         self.title = self.font_name.render('SNAKE', True, pygame.Color(252, 200, 12))
-        self.text_1 = self.font_menu.render('START GAME', True, pygame.Color('orange'))
-        self.text_2 = self.font_menu.render('  SETTINGS', True, pygame.Color('orange'))
+        self.info = self.font_other.render('>> enter for start <<', True, pygame.Color(252, 200, 12))
+        self.settings = self.font_other.render('settings in develop...', True, pygame.Color('orange'))
+
+        # interactive inscriptions
+        self.inscriptions_positions = {
+            1: (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2),
+            2: (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50),
+            3: (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50)
+        }
+
+        self.inscriptions = {
+            'start game': objects.Inscription('START GAME', 'orange'),
+            'settings': objects.Inscription('  SETTINGS', 'orange'),
+            'controls': objects.Inscription('  CONTROLS', 'orange'),
+            'speed': objects.Inscription('   SPEED', 'orange'),
+            'info': objects.Inscription('   INFO', 'orange')
+        }
+
+        # level menu - settings
+        self.inscriptions['settings'].add_link(self.inscriptions['controls'])
+        self.inscriptions['settings'].add_link(self.inscriptions['speed'])
+        self.inscriptions['settings'].add_link(self.inscriptions['info'])
+
+        # level menu - controls
+
+        # level menu - speed
+
+        # level menu - info
+
+        self.current_level = [
+            self.inscriptions['start game']
+        ]
+
+        container_inscriptions = objects.ContainerInscription()
+        self.current_menu = objects.LevelMenu()
+
+        # cursor
+        self.cursor_position = 1
+        self.dict_position = {1: (settings.resolution[0] / 2 - 200, settings.resolution[1] / 2 + 15),
+                              2: (settings.resolution[0] / 2 - 200, settings.resolution[1] / 2 + 65)}
 
     def event(self):
         """event handling"""
@@ -27,23 +64,40 @@ class Menu:
             if event.type == pygame.QUIT:
                 self.check_notQUIT = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_RETURN:
                     self.status = 'game'
+
+                if event.key == pygame.K_DOWN:
+                    if self.cursor_position == len(self.current_level):
+                        self.cursor_position = 1
+                    else:
+                        self.cursor_position += 1
+
+                if event.key == pygame.K_UP:
+                    if self.cursor_position == 1:
+                        self.cursor_position = len(self.current_level)
+                    else:
+                        self.cursor_position -= 1
 
     def update(self):
         """update state menu"""
-        pass
+        self.current_menu.choice_menu(self.cursor_position)
 
     def render(self):
         """display state menu"""
         # display background
         self.window.blit(pygame.image.load('images/grass.jpg'), (0, 0))
         self.window.blit(pygame.image.load('images/snake_menu.png'), (settings.resolution[0] / 2 - 300, 30))
+        self.window.blit(pygame.image.load('images/meal_30.png'), self.dict_position[self.cursor_position])
 
         # display inscriptions
-        self.window.blit(self.title, (settings.resolution[0] / 2 - 300, 30))
-        self.window.blit(self.text_1, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2))
-        self.window.blit(self.text_2, (settings.resolution[0] / 2 - 150, settings.resolution[1] / 2 + 50))
+        self.window.blit(self.title, (settings.resolution[0] / 2 - 300, 30))    # title
+        self.window.blit(self.settings, (settings.resolution[0] / 2 - 180, 520))
+        self.window.blit(self.info, (settings.resolution[0] / 2 - 210, 700))
+
+        for i in range(len(self.current_level)):                   # interactive inscription
+            self.window.blit(self.current_level[i].inscription,
+                             self.inscriptions_positions[i + 1])
 
         pygame.display.update()
 
